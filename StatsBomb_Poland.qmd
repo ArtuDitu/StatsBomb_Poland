@@ -13,7 +13,7 @@ In this document I explore free StatsBomb data from World Cup 2022. I focus on t
 
 Here we load all libraries required to get the data and execute the code in this file.
 
-```{r}
+```{r warning=FALSE}
 library(tidyverse)
 library(StatsBombR)
 library(ggplot2)
@@ -27,10 +27,39 @@ Select World Cup 2022 (id 43) and events related to only Polish team.
 
 This script can be used to analyze other teams too.
 
-```{r}
+```{r warning=FALSE}
 team_to_analyze = "Poland" # specify a team
 d <- FreeCompetitions() %>% # load all competitions 
   filter(competition_id == 43 & season_name == 2022) %>% # select World Cup 2022
   FreeMatches() %>% # load all matches
-  filter(home_team.home_team_name == team_to_analyze | away_team.away_team_name == team_to_analyze) # select matchs of Polish team
+  filter(home_team.home_team_name == team_to_analyze | away_team.away_team_name == team_to_analyze) %>% # select matchs of Polish team
+  free_allevents(Parallel = T) %>% #load all events
+  allclean() # calculate additional variables from existings ones (StatsBomb function to improve dataset)
+
+# create a data frame that has info about opponents of chosen team
+d_opponents <- FreeCompetitions() %>% # load all competitions
+  filter(competition_id == 43 & season_name == 2022) %>% # select World Cup 2022
+  FreeMatches() %>% # load all matches
+  filter(home_team.home_team_name == team_to_analyze | away_team.away_team_name == team_to_analyze) %>%
+  select(match_id, match_date, home_team.home_team_name, away_team.away_team_name) %>%
+  distinct() %>%
+  mutate(opponent = case_when(home_team.home_team_name == team_to_analyze ~ away_team.away_team_name,
+                              away_team.away_team_name == team_to_analyze ~ home_team.home_team_name))
+
+#merge both datasets to have info about the opponent for each event
+d <- inner_join(d, d_opponents, by="match_id")
+```
+
+# Analysis
+
+## Shots
+
+First I look at all shots of Polish team.
+
+```{r}
+d_shots <- filter(d, team.id == 789 & type.id == 16) # select only shots of Polish team
+
+create_Pitch(goaltype = "box") +
+  geom_point(data = d_shots, aes(x = location.x, y = location.y, colour = opponent))+
+  theme(legend.position = c(0.15, 0.8))
 ```
