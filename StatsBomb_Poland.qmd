@@ -7,5 +7,30 @@ editor: visual
 
 # Introduction
 
-In this document I explore free StatsBomb data from World Cup 2022. I focus on the Polish national team. It is a first time I work with StatsBomb data. My goal is to explore the data and analyze the performance of the team. \
-\
+In this document I explore free StatsBomb data from World Cup 2022. I focus on the Polish national team. It is a first time I work with StatsBomb data. My goal is to explore the data and analyze the performance of the team.
+
+# Libraries
+
+Here we load all libraries required to get the data and execute the code in this file.
+
+```{r}
+library(tidyverse)
+library(StatsBombR)
+library(ggplot2)
+library(SBpitch)
+library(forcats)
+```
+
+# Select the data
+
+Select World Cup 2022 (id 43) and events related to only Polish team.
+
+This script can be used to analyze other teams too.
+
+```{r}
+team_to_analyze = "Poland" # specify a team
+d <- FreeCompetitions() %>% # load all competitions 
+  filter(competition_id == 43 & season_name == 2022) %>% # select World Cup 2022
+  FreeMatches() %>% # load all matches
+  filter(home_team.home_team_name == team_to_analyze | away_team.away_team_name == team_to_analyze) # select matchs of Polish team
+```
