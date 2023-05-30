@@ -1,0 +1,11 @@
+---
+title: "StatsBomb_Poland"
+author: "Artur Czeszumski"
+format: html
+editor: visual
+---
+
+# Introduction
+
+In this document I explore free StatsBomb data from World Cup 2022. I focus on the Polish national team. It is a first time I work with StatsBomb data. My goal is to explore the data and analyze the performance of the team. \
+\
