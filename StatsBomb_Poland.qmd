@@ -1,13 +1,20 @@
 ---
 title: "StatsBomb_Poland"
 author: "Artur Czeszumski"
-format: html
+format:
+  html:
+    code-fold: true
+    code-summary: "Show the code"
 editor: visual
+warning: false
+results: hide
 ---
 
 # Introduction
 
 In this document I explore free StatsBomb data from World Cup 2022. I focus on the Polish national team. It is a first time I work with StatsBomb data. My goal is to explore the data and analyze the performance of the team.
+
+It is a first time I work with data coming from football. Any feedback, comment, questions are always welcomed! 
 
 # Libraries
 
@@ -27,7 +34,7 @@ Select World Cup 2022 (id 43) and events related to only Polish team.
 
 This script can be used to analyze other teams too.
 
-```{r warning=FALSE}
+```{r}
 team_to_analyze = "Poland" # specify a team
 d <- FreeCompetitions() %>% # load all competitions 
   filter(competition_id == 43 & season_name == 2022) %>% # select World Cup 2022
@@ -62,16 +69,17 @@ Each color represents different opponent and the size of the shot location repre
 create_Pitch(goaltype = "box") +
   geom_point(data = d[d$team.id == 789 & d$type.id == 16,], aes(x = location.x, y = location.y, 
                                  colour = opponent, 
-                                 size = shot.statsbomb_xg)) +
+                                 size = shot.statsbomb_xg,
+                                 shape = factor(shot.outcome.name))) +
   ggtitle("Shots - Poland World Cup 2022") +
-  labs(colour = "Opponent") +
+  labs(colour = "Opponent", shape = "Outcome") +
   guides(size = "none") +
-  theme(legend.position = c(0.12, 0.9),
-        plot.title = element_text(hjust = 1,vjust = -2),
+  scale_y_reverse() +
+  theme(plot.title = element_text(hjust = 1,vjust = -2),
         plot.background = element_rect(fill = "#F9F9F9"))
 ```
 
-Then let's have a look who shot the most often.
+Then let's have a look who shot the most often and who accumalted the highest xG. 
 
 ```{r}
 d_shots_players <- d %>%
@@ -108,4 +116,20 @@ ggplot(data = d_shots_players,
   theme_bw() +
   theme(axis.title.y = element_blank(),
         axis.title.x = element_blank())
+```
+
+Shots against Poland
+
+```{r}
+create_Pitch(goaltype = "box") +
+  geom_point(data = d[d$team.id != 789 & d$type.id == 16,], aes(x = location.x, y = location.y, 
+                                 colour = opponent, 
+                                 size = shot.statsbomb_xg,
+                                 shape = factor(shot.outcome.name))) +
+  ggtitle("Shots - Poland World Cup 2022") +
+  labs(colour = "Opponent", shape = "Outcome") +
+  guides(size = "none") +
+  scale_y_reverse() +
+  theme(plot.title = element_text(hjust = 1,vjust = -2),
+        plot.background = element_rect(fill = "#F9F9F9"))
 ```
