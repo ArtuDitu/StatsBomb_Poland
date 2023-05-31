@@ -40,11 +40,11 @@ d <- FreeCompetitions() %>% # load all competitions
 d_opponents <- FreeCompetitions() %>% # load all competitions
   filter(competition_id == 43 & season_name == 2022) %>% # select World Cup 2022
   FreeMatches() %>% # load all matches
-  filter(home_team.home_team_name == team_to_analyze | away_team.away_team_name == team_to_analyze) %>%
+  filter(home_team.home_team_name == team_to_analyze | away_team.away_team_name == team_to_analyze) %>%  # select matchs of Polish team
   select(match_id, match_date, home_team.home_team_name, away_team.away_team_name) %>%
-  distinct() %>%
+  distinct() %>% # select only relevant variables
   mutate(opponent = case_when(home_team.home_team_name == team_to_analyze ~ away_team.away_team_name,
-                              away_team.away_team_name == team_to_analyze ~ home_team.home_team_name))
+                              away_team.away_team_name == team_to_analyze ~ home_team.home_team_name)) # create a new variable that will contain info who was an opponent in each game
 
 #merge both datasets to have info about the opponent for each event
 d <- inner_join(d, d_opponents, by="match_id")
@@ -56,13 +56,18 @@ d <- inner_join(d, d_opponents, by="match_id")
 
 First I look at all shots of Polish team.
 
+Each color represents different opponent and the size of the shot location represents xG (statsbomb).
+
 ```{r}
 d_shots <- filter(d, team.id == 789 & type.id == 16) # select only shots of Polish team
 
 create_Pitch(goaltype = "box") +
-  geom_point(data = d_shots, aes(x = location.x, y = location.y, colour = opponent))+
+  geom_point(data = d_shots, aes(x = location.x, y = location.y, 
+                                 colour = opponent, 
+                                 size = shot.statsbomb_xg))+
   ggtitle("Shots - Poland World Cup 2022")+
   labs(colour = "Opponent")+
+  guides(size = "none")+
   theme(legend.position = c(0.15, 0.8),
         plot.title = element_text(hjust = 1,vjust = -2),
         plot.background = element_rect(fill = "#F9F9F9"))
