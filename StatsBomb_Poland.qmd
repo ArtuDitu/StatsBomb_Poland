@@ -140,8 +140,6 @@ Here we look at passes of Polish team during World Cup
 
 First we look at amount of passes by each player.
 
-filter(team.id == 789 & match_id == 3857264 & type.name == "Pass")
-
 ```{r}
 
 ```
