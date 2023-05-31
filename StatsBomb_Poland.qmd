@@ -14,7 +14,7 @@ results: hide
 
 In this document I explore free StatsBomb data from World Cup 2022. I focus on the Polish national team. It is a first time I work with StatsBomb data. My goal is to explore the data and analyze the performance of the team.
 
-It is a first time I work with data coming from football. Any feedback, comment, questions are always welcomed! 
+It is a first time I work with data coming from football. Any feedback, comment, questions are always welcomed!
 
 # Libraries
 
@@ -79,7 +79,7 @@ create_Pitch(goaltype = "box") +
         plot.background = element_rect(fill = "#F9F9F9"))
 ```
 
-Then let's have a look who shot the most often and who accumalted the highest xG. 
+Then let's have a look who shot the most often and who accumalted the highest xG.
 
 ```{r}
 d_shots_players <- d %>%
@@ -132,4 +132,27 @@ create_Pitch(goaltype = "box") +
   scale_y_reverse() +
   theme(plot.title = element_text(hjust = 1,vjust = -2),
         plot.background = element_rect(fill = "#F9F9F9"))
+```
+
+## Passes
+
+Here we look at passes of Polish team during World Cup
+
+First we look at amount of passes by each player.
+
+filter(team.id == 789 & match_id == 3857264 & type.name == "Pass")
+
+```{r}
+
+d_tmp <- d%>%
+  filter(team.id == 789 & match_id == 3857264 & type.name == "Pass")
+
+d_shots_players <- d %>%
+  filter(team.id == 789) %>% # select Poland
+  group_by(player.name, na.rm = TRUE) %>% # group for each player
+  summarise(passes = sum(type.name=="Pass", na.rm = TRUE), # amount of shots per player
+            passes_per_game = sum(type.name=="Pass", na.rm = TRUE)/n_distinct(match_id)) # shots per game per player
+
+d_shots_players <- d_shots_players[d_shots_players$shots != 0,]
+
 ```
