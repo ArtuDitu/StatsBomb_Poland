@@ -144,15 +144,4 @@ filter(team.id == 789 & match_id == 3857264 & type.name == "Pass")
 
 ```{r}
 
-d_tmp <- d%>%
-  filter(team.id == 789 & match_id == 3857264 & type.name == "Pass")
-
-d_shots_players <- d %>%
-  filter(team.id == 789) %>% # select Poland
-  group_by(player.name, na.rm = TRUE) %>% # group for each player
-  summarise(passes = sum(type.name=="Pass", na.rm = TRUE), # amount of shots per player
-            passes_per_game = sum(type.name=="Pass", na.rm = TRUE)/n_distinct(match_id)) # shots per game per player
-
-d_shots_players <- d_shots_players[d_shots_players$shots != 0,]
-
 ```
