@@ -172,12 +172,29 @@ ggplot(data = d_pass_players,
  aes(x = reorder(player.name, passes), y = passes_count, fill = pass_accuracy)) +
   geom_bar(stat = "identity", width = 0.5) + 
   ggtitle("Passes per player") +
-  scale_fill_discrete(name = "Passes", labels = c("Succesful", "Unsuccesful")) +
   scale_y_continuous( expand = c(0,0)) +
-  scale_fill_brewer(palette = "Dark2") +
+  scale_fill_brewer(palette = "Dark2",name = "Passes", labels = c("Succesful", "Unsuccesful")) +
   coord_flip() +
   theme_bw() +
   theme(axis.title.y = element_blank(),
         axis.title.x = element_blank())
 
+```
+
+All passes of one player. I will use Piotr Zieliński but script can be used to plot any player.
+
+```{r}
+player_to_plot <- "Piotr Zieliński"
+
+d <- d %>%
+  mutate(pass.succesful = case_when(is.na(pass.outcome.id) ~ 1,
+                                    TRUE ~ 0)) # add a column to calculate the accuracy of the pass
+
+create_Pitch(goaltype = "box") +
+  geom_segment(data = d[d$type.name == "Pass" & d$player.name == player_to_plot,], aes(x = location.x, y = location.y, xend = pass.end_location.x, yend = pass.end_location.y, colour = fct_rev(factor(pass.succesful))), lineend = "round", linewidth = 0.5, arrow = arrow(length = unit(0.07, "inches"), ends = "last", type = "open")) +
+  labs(title = paste(player_to_plot, " Passes"), subtitle = "World Cup 2022") +
+  scale_colour_brewer(palette = "Dark2",name = "Outcome", labels = c("Succesful", "Unsuccesful")) +
+  scale_y_reverse() + 
+  theme(plot.background = element_rect(fill = "#F9F9F9"),
+        plot.title = element_text(vjust = -1))
 ```
