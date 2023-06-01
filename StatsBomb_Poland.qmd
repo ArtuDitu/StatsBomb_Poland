@@ -26,6 +26,7 @@ library(StatsBombR)
 library(ggplot2)
 library(SBpitch)
 library(forcats)
+library(RColorBrewer)
 ```
 
 # Select the data
@@ -74,6 +75,7 @@ create_Pitch(goaltype = "box") +
   ggtitle("Shots - Poland World Cup 2022") +
   labs(colour = "Opponent", shape = "Outcome") +
   guides(size = "none") +
+  scale_colour_brewer(palette = "Dark2") +
   scale_y_reverse() +
   theme(plot.title = element_text(hjust = 1,vjust = -2),
         plot.background = element_rect(fill = "#F9F9F9"))
@@ -113,6 +115,7 @@ ggplot(data = d_shots_players,
   ggtitle("xG per player") +
   scale_y_continuous( expand = c(0,0), breaks = 0:max(d_shots_players$xG)) +
   coord_flip() +
+  scale_fill_brewer(palette = "Dark2") +
   theme_bw() +
   theme(axis.title.y = element_blank(),
         axis.title.x = element_blank())
@@ -129,6 +132,7 @@ create_Pitch(goaltype = "box") +
   ggtitle("Shots - Poland World Cup 2022") +
   labs(colour = "Opponent", shape = "Outcome") +
   guides(size = "none") +
+  scale_colour_brewer(palette = "Dark2") +
   scale_y_reverse() +
   theme(plot.title = element_text(hjust = 1,vjust = -2),
         plot.background = element_rect(fill = "#F9F9F9"))
@@ -138,8 +142,42 @@ create_Pitch(goaltype = "box") +
 
 Here we look at passes of Polish team during World Cup
 
-First we look at amount of passes by each player.
+First we look at amount of passes (successful and not successful) by each player.\
+\
+I assume that have NA in the pass.outcome variable are accurate. I couldn't find the info in the documentation.
 
 ```{r}
+d_pass_players <- d %>%
+  filter(team.id == 789) %>% # select Poland
+  group_by(player.name, na.rm = TRUE) %>% # group for each player
+  mutate(pass.succesful = case_when(is.na(pass.outcome.id) ~ 1,
+                                    TRUE ~ 0)) %>% # add a column to calculate the accuracy of the pass
+  summarise(passes = sum(type.name == "Pass", na.rm = TRUE), # amount of passes per player
+            passes_per_game = sum(type.name == "Pass", na.rm = TRUE)/n_distinct(match_id), # passes per game per player
+            succesful_passes = sum(type.name == "Pass" & pass.succesful == 1, na.rm = TRUE), # amount of succesful passes per player
+            succesful_passes_per_game = sum(type.name == "Pass" & pass.succesful == 1, na.rm = TRUE)/n_distinct(match_id), # succesful passes per game per player
+            unsuccesful_passes = sum(type.name == "Pass" & pass.succesful == 0, na.rm = TRUE), # amount of unsuccesful passes per player
+            unsuccesful_passes_per_game = sum(type.name == "Pass" & pass.succesful == 0, na.rm = TRUE)/n_distinct(match_id), # unsuccesful passes per game per player
+            games = n_distinct(match_id)) %>% # xG per player per game
+  pivot_longer(
+    cols = c(succesful_passes,unsuccesful_passes),
+    names_to = 'pass_accuracy',
+    values_to = 'passes_count'
+  )
+#remove empty row
+d_pass_players <- d_pass_players[d_pass_players$passes != 0,]
+
+# plot passes per player
+ggplot(data = d_pass_players,
+ aes(x = reorder(player.name, passes), y = passes_count, fill = pass_accuracy)) +
+  geom_bar(stat = "identity", width = 0.5) + 
+  ggtitle("Passes per player") +
+  scale_fill_discrete(name = "Passes", labels = c("Succesful", "Unsuccesful")) +
+  scale_y_continuous( expand = c(0,0)) +
+  scale_fill_brewer(palette = "Dark2") +
+  coord_flip() +
+  theme_bw() +
+  theme(axis.title.y = element_blank(),
+        axis.title.x = element_blank())
 
 ```
